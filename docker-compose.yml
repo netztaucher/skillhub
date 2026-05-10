@@ -12,6 +12,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - mcp-net
 
   postgres:
     image: ${POSTGRES_IMAGE:-postgres:16-alpine}
@@ -28,6 +30,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - mcp-net
 
   redis:
     image: ${REDIS_IMAGE:-redis:7-alpine}
@@ -38,6 +42,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - mcp-net
 
   minio:
     image: ${MINIO_IMAGE:-minio/minio:latest}
@@ -55,6 +61,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - mcp-net
 
 volumes:
   postgres_data:

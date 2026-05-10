@@ -2,6 +2,8 @@ services:
   skill-scanner:
     image: ${SKILLHUB_SCANNER_IMAGE:-ghcr.io/iflytek/skillhub-scanner}:${SKILLHUB_VERSION:-latest}
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     environment:
       SKILL_SCANNER_LLM_API_KEY: ${SKILL_SCANNER_LLM_API_KEY:-}
       SKILL_SCANNER_LLM_BASE_URL: ${SKILL_SCANNER_LLM_BASE_URL:-}
@@ -11,6 +13,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - mcp-net
 
   postgres:
     image: ${POSTGRES_IMAGE:-postgres:16-alpine}
@@ -28,6 +32,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - mcp-net
 
   redis:
     image: ${REDIS_IMAGE:-redis:7-alpine}
@@ -42,12 +48,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - mcp-net
 
   server:
     image: ${SKILLHUB_SERVER_IMAGE:-ghcr.io/iflytek/skillhub-server}:${SKILLHUB_VERSION:-latest}
     restart: unless-stopped
     ports:
-      - "${API_PORT:-8080}:8080"
+      - "8098:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-skillhub}
@@ -58,7 +66,7 @@ services:
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       SKILLHUB_PUBLIC_BASE_URL: ${SKILLHUB_PUBLIC_BASE_URL:-}
       DEVICE_AUTH_VERIFICATION_URI: ${DEVICE_AUTH_VERIFICATION_URI:-}
-      SKILLHUB_STORAGE_PROVIDER: ${SKILLHUB_STORAGE_PROVIDER:-s3}
+      SKILLHUB_STORAGE_PROVIDER: ${SKILLHUB_STORAGE_PROVIDER:-local}
       STORAGE_BASE_PATH: /var/lib/skillhub/storage
       SKILLHUB_STORAGE_S3_ENDPOINT: ${SKILLHUB_STORAGE_S3_ENDPOINT:-}
       SKILLHUB_STORAGE_S3_PUBLIC_ENDPOINT: ${SKILLHUB_STORAGE_S3_PUBLIC_ENDPOINT:-}
@@ -104,12 +112,14 @@ services:
       timeout: 5s
       retries: 12
       start_period: 60s
+    networks:
+      - mcp-net
 
   web:
     image: ${SKILLHUB_WEB_IMAGE:-ghcr.io/iflytek/skillhub-web}:${SKILLHUB_VERSION:-latest}
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-80}:80"
+      - "8097:80"
     environment:
       SKILLHUB_API_UPSTREAM: ${SKILLHUB_API_UPSTREAM:-http://server:8080}
       SKILLHUB_WEB_API_BASE_URL: ${SKILLHUB_WEB_API_BASE_URL:-}
@@ -123,6 +133,8 @@ services:
       timeout: 5s
       retries: 12
       start_period: 10s
+    networks:
+      - mcp-net
 
 volumes:
   postgres_data:
