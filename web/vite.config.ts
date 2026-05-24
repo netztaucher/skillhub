@@ -31,11 +31,11 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: process.env.SKILLHUB_API_TARGET || 'http://localhost:8098',
         changeOrigin: true,
       },
       '/oauth2': {
-        target: 'http://localhost:8080',
+        target: process.env.SKILLHUB_API_TARGET || 'http://localhost:8098',
         changeOrigin: true,
       },
     },
