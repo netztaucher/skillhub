@@ -67,3 +67,8 @@ services:
 volumes:
   postgres_data:
   minio_data:
+
+networks:
+  mcp-net:
+    external: true
+
