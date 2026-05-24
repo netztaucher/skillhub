@@ -121,7 +121,7 @@ public class CliSkillAppService {
 
     public CliPublishResponse publish(String namespace, List<PackageEntry> entries, String publisherId, SkillVisibility visibility, Set<String> platformRoles) {
         SkillPublishService.PublishResult result = skillPublishService.publishFromEntries(
-                namespace, entries, publisherId, visibility, platformRoles, false
+                namespace, entries, publisherId, visibility, platformRoles, true
         );
 
         return new CliPublishResponse(

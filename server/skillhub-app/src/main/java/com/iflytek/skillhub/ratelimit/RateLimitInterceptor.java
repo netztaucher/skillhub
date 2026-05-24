@@ -6,6 +6,7 @@ import com.iflytek.skillhub.dto.ApiResponseFactory;
 import com.iflytek.skillhub.metrics.SkillHubMetrics;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -28,24 +29,32 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     private final ApiResponseFactory apiResponseFactory;
     private final ObjectMapper objectMapper;
     private final SkillHubMetrics metrics;
+    private final Environment environment;
 
     public RateLimitInterceptor(RateLimiter rateLimiter,
                                 ClientIpResolver clientIpResolver,
                                 AnonymousDownloadIdentityService anonymousDownloadIdentityService,
                                 ApiResponseFactory apiResponseFactory,
                                 ObjectMapper objectMapper,
-                                SkillHubMetrics metrics) {
+                                SkillHubMetrics metrics,
+                                Environment environment) {
         this.rateLimiter = rateLimiter;
         this.clientIpResolver = clientIpResolver;
         this.anonymousDownloadIdentityService = anonymousDownloadIdentityService;
         this.apiResponseFactory = apiResponseFactory;
         this.objectMapper = objectMapper;
         this.metrics = metrics;
+        this.environment = environment;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (!(handler instanceof HandlerMethod)) {
+            return true;
+        }
+
+        // Bypass all rate limits for local development profile
+        if (java.util.Arrays.asList(environment.getActiveProfiles()).contains("local")) {
             return true;
         }
 
@@ -58,6 +67,12 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
         // Determine if user is authenticated
         String userId = (String) request.getAttribute("userId");
+
+        // Bypass rate limits for local development admin/user accounts
+        if ("local-admin".equals(userId) || "local-user".equals(userId)) {
+            return true;
+        }
+
         boolean isAuthenticated = userId != null;
 
         // Get limit based on authentication status
