@@ -140,3 +140,7 @@ volumes:
   postgres_data:
   redis_data:
   skillhub_storage:
+
+networks:
+  mcp-net:
+    external: true
